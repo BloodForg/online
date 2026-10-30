@@ -847,6 +847,10 @@ section.dr2 { background: var(--surface); border: 1px solid var(--line); border-
 .spendrow .focusbtn.solo { flex: 1 1 260px; }
 .mid > #focusCard { margin: 0; }
 .stage:has(> section.dr2) { padding: 0; border: 0; background: transparent; }
+.resume { border: 1px solid var(--accent); border-radius: var(--r); padding: 14px 16px; margin: 0 0 16px; max-width: 520px; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.resume .kicker { margin: 0 0 4px; }
+.resume .resumeln { margin: 0 0 8px; font-size: 16px; }
+.resume .btnrow { margin-top: 6px; }
 
 </style>
 <div class="app">
@@ -9080,7 +9084,7 @@ function renderCtrl() {
     `<button class="seg solo" id="cNext"${nextPossible() ? '' : ' disabled'} title="Перейти к следующему событию">Далее »</button>` +
     `<button class="seg solo${opt.auto === 'full' ? ' on' : ''}" id="cAuto" aria-pressed="${opt.auto === 'full'}" title="Игра выбирает сама, вы только смотрите">Авто</button>` +
     `<span class="ctl-r"><button class="seg solo${opt.music ? ' on' : ''}" id="cMusic" aria-pressed="${!!opt.music}" title="Фоновая музыка">♪ Музыка</button>` +
-    `<button class="seg solo${exitAsk ? ' danger' : ''}" id="cExit">${exitAsk ? 'Точно выйти? Жизнь не сохранится' : 'Выйти'}</button></span>` +
+    `<button class="seg solo${exitAsk ? ' danger' : ''}" id="cExit">${exitAsk ? 'Точно выйти? Продолжить можно с главной' : 'Выйти'}</button></span>` +
     `<span class="sess" id="sess" title="Время сеанса: ориентир. Если вы думаете дольше, игра быстрее листает тихие годы">${sessText()}</span>`;
   $('cMusic').onclick = () => { toggleMusic(!opt.music); renderCtrl(); };
   $('cExit').onclick = () => {
@@ -10605,6 +10609,7 @@ const NEWS = [
     'Все решения и события открываются окнами; окна с итогом закрываются сами через 3 секунды, если не навести мышь.',
     'Темп зависит от длительности жизни в настройках: при «около часа» год занимает в среднем около минуты на 1×, на 4× и 16× пропорционально быстрее. Полоска под панелью показывает ожидание, «Далее »» его пропускает.',
     'Запись о смерти переделана: «Лучшие моменты жизни» (сначала отмеченные звездой), затем кнопки «Сохранить жизнь» и «Начать новую жизнь». Фокус года и траты теперь над летописью.',
+    'Незаконченная жизнь сохраняется сама: после перезагрузки на главной появится «Продолжить жизнь». Если ход вдруг застрял, игра через 5 секунд двигает его дальше.',
     'Мемориал хранит три последние жизни: новая заменяет самую старую.',
     '«Если вам тяжело» теперь только номера поддержки по темам игры.',
     '«Ещё» стало компактным: «Об игре», «Что нового» (три последние версии) и «Конфиденциальность».',
@@ -11320,6 +11325,60 @@ renderEnd = function (st) {
   const rl = renderLog;
   renderLog = function () { rl(); if (S && view.name === 'end') { const el = $('chron'); if (el) el.hidden = true; } };
 })();
+
+
+/* ---------- v2.9.8: автосохранение незаконченной жизни и защита от зависания ---------- */
+const RUN_KEY = 'onelife_run_v1';
+function runSer() { return JSON.stringify(S, (k, v) => v instanceof Set ? { __set: [...v] } : (typeof v === 'function' ? undefined : v)); }
+function saveRun() {
+  try {
+    if (!S || S.dead || S.over || ['start', 'spin', 'end'].includes(view.name)) return;
+    localStorage.setItem(RUN_KEY, JSON.stringify({ v: 1, t: Date.now(), name: S.name, age: S.age, country: S.ctx && S.ctx.name, s: runSer() }));
+  } catch (e) { /* хранилище недоступно: игра идёт без сохранения */ }
+}
+function peekRun() {
+  try { const j = JSON.parse(localStorage.getItem(RUN_KEY) || 'null'); return j && j.v === 1 && j.s ? j : null; } catch (e) { return null; }
+}
+function dropRun() { try { localStorage.removeItem(RUN_KEY); } catch (e) { /* ничего */ } }
+function resumeRun() {
+  const j = peekRun(); if (!j) return false;
+  let st; try { st = JSON.parse(j.s, (k, v) => (v && typeof v === 'object' && Array.isArray(v.__set)) ? new Set(v.__set) : v); } catch (e) { return false; }
+  clearTimer(); paused = false; disp = null; modal = null; document.body.classList.remove('paused');
+  S = st; S.rng = Math.random; S.lastOpenAt = Date.now(); S.dead = !!S.dead;
+  view = { name: 'run', lines: [], st0: { ...S.st }, r: null, to: S.age };
+  try { advance(); } catch (e) { console.warn('resume', e); S = null; view = { name: 'start' }; render(); return false; }
+  return true;
+}
+(() => {
+  const adv = advance;
+  advance = function () { saveRun(); return adv.apply(this, arguments); };
+  const oe = onEnd;
+  onEnd = function () { dropRun(); return oe.apply(this, arguments); };
+  const lh = landingHTML, bl = bindLanding;
+  landingHTML = function () {
+    let h = lh(); const j = peekRun();
+    if (j) h = h.replace('<div class="btnrow wrap landgo">', `<div class="resume"><p class="kicker">Незаконченная жизнь</p><p class="resumeln"><b>${esc(j.name || 'Без имени')}</b> · ${j.age} ${word(j.age, 'год', 'года', 'лет')}${j.country ? ' · ' + esc(j.country) : ''}</p><div class="btnrow wrap"><button class="primary" id="resumeGo">Продолжить жизнь</button><button class="ghost" id="resumeDel">Удалить</button></div></div><div class="btnrow wrap landgo">`);
+    return h;
+  };
+  bindLanding = function () {
+    bl();
+    const g = $('resumeGo'), d = $('resumeDel');
+    if (g) g.onclick = () => { if (!resumeRun()) { dropRun(); render(); } };
+    if (d) d.onclick = () => { dropRun(); render(); };
+  };
+})();
+/* если ход застрял (нет таймера, нет окна), через 5 секунд двигаем жизнь дальше */
+(() => {
+  let sig = '', at = Date.now();
+  setInterval(() => {
+    if (!S || paused || document.hidden || ['start', 'spin', 'end', 'birth'].includes(view.name) || blocking()) { at = Date.now(); return; }
+    const stuck = (view.name === 'run' && !timer && !pendingFn) || ((view.name === 'pop' || view.name === 'mile') && !modal);
+    const cur = view.name + '|' + S.age + '|' + (modal ? modal.kind + modal.phase : '');
+    if (!stuck || cur !== sig) { sig = cur; at = Date.now(); return; }
+    if (Date.now() - at > 5000) { at = Date.now(); try { console.warn('watchdog: ход возобновлён'); if (view.name === 'run' && view.r) skipRun(); else advance(); } catch (e) { console.warn(e); } }
+  }, 1000);
+})();
+if (!S && view.name === 'start') { try { render(); } catch (e) { console.warn(e); } }
 
 
 </script>
