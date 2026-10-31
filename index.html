@@ -852,6 +852,40 @@ section.dr2 { background: var(--surface); border: 1px solid var(--line); border-
 .resume .resumeln { margin: 0 0 8px; font-size: 16px; }
 .resume .btnrow { margin-top: 6px; }
 
+/* v2.9.9: финальный экран: показ моментов, полоса жизни, сравнение */
+.dr2 .reel { margin: 10px clamp(16px, 3vw, 28px) 14px; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--bg); }
+.dr2 .reelpic .scene { display: block; width: 100%; height: clamp(150px, 26vw, 230px); image-rendering: pixelated; }
+.dr2 .reelcap { padding: 12px 16px 6px; min-height: 130px; }
+.dr2 .reelcap .rtag { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin: 0 0 4px; font-size: 13px; color: var(--muted); }
+.dr2 .reelcap .rtag .ag { font: 600 15px var(--f-mono); color: var(--ink); }
+.dr2 .reelcap .rtag i { font-style: normal; color: var(--accent); }
+.dr2 .reelcap h4 { margin: 0 0 4px; font: 600 20px/1.25 var(--f-text); }
+.dr2 .reelcap p { margin: 0 0 6px; font-size: 15px; line-height: 1.5; }
+.dr2 .reelcap .rpick { color: var(--muted); font-size: 14px; }
+.dr2 .reelctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px 16px 4px; }
+.dr2 .reelctl .small { margin-left: auto; }
+.dr2 .reelbar { padding: 10px 16px 14px; }
+.dr2 .reelbar .track { position: relative; height: 8px; background: var(--bar); border-radius: 4px; }
+.dr2 .reelbar .fill { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--accent) 40%, var(--bar)); border-radius: 4px; }
+.dr2 .reelbar .now { position: absolute; top: 50%; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 3px solid var(--bg); transform: translate(-50%, -50%); pointer-events: none; transition: left .3s; }
+.dr2 .reelbar .rdot { position: absolute; top: 50%; width: 14px; height: 14px; padding: 0; border-radius: 50%; border: 2px solid var(--ink); background: var(--surface); transform: translate(-50%, -50%); cursor: pointer; }
+.dr2 .reelbar .rdot.st { border-color: var(--accent); background: var(--accent); }
+.dr2 .reelbar .rdot.on { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); z-index: 2; }
+.dr2 .reelbar .rdot:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.dr2 .reelbar .scale { position: relative; height: 18px; margin-top: 10px; font: 500 11px var(--f-mono); color: var(--muted); }
+.dr2 .reelbar .scale span { position: absolute; transform: translateX(-50%); }
+.dr2 .cmplist { list-style: none; padding: 0; display: grid; gap: 0; margin-top: 8px; }
+.dr2 .cmplist li { border-top: 1px solid var(--line); padding: 10px 0 12px; display: grid; gap: 6px; }
+.dr2 .cmh { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; }
+.dr2 .cmh b { font-weight: 600; font-size: 15px; }
+.dr2 .cmb { position: relative; background: var(--bar); border-radius: 4px; height: 24px; overflow: hidden; }
+.dr2 .cmb i { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--accent) 55%, var(--bar)); }
+.dr2 .cmb.alt i { background: color-mix(in srgb, var(--alt) 55%, var(--bar)); }
+.dr2 .cmb span { position: relative; z-index: 1; display: block; padding: 3px 10px; font-size: 13px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feedstub { border: 1px dashed var(--line); border-radius: var(--r); padding: 18px 20px; margin: 8px 0 24px; }
+.feedstub h2 { margin: 0 0 6px; }
+.feedstub p { margin: 0; color: var(--muted); }
+
 </style>
 <div class="app">
   <div class="topbars" id="topbars">
@@ -3825,7 +3859,7 @@ FIELD_KEYS.forEach(f => {
   ];
   if (['sci', 'med', 'eng', 'it', 'eco', 'law'].includes(f))
     opts.push({ label: f === 'med' ? 'Ординатура и специализация' : 'Магистратура и аспирантура', hint: 'ещё три года без большого дохода', odds: true, p: s => cl(0.2 + s.st.skill / 160 + (has(s, 'research') ? 0.2 : 0) + (has(s, 'mentor') ? 0.08 : 0)),
-      ok: { fx: { skill: 10, money: -2, stress: 6, freedom: 2 }, add: ['research'], act: s => { s.studyEnd = s.age + 3; s.advanced = true; }, res: 'Вас приняли. Вы остаёстесь в университете: впереди ещё три года глубокой работы.' },
+      ok: { fx: { skill: 10, money: -2, stress: 6, freedom: 2 }, add: ['research'], act: s => { s.studyEnd = s.age + 3; s.advanced = true; }, res: 'Вас приняли. Вы остаётесь в университете: впереди ещё три года глубокой работы.' },
       bad: { fx: { stress: 5, skill: 1 }, act: s => after(s), res: 'Не получилось: места разобрали более сильные. Вы идёте работать с дипломом.' } });
   if (['it', 'art', 'law', 'eco', 'edu', 'eng'].includes(f))
     opts.push({ label: 'Работать на себя', hint: 'проекты, клиенты, свободный график', odds: true, p: s => cl(0.3 + s.st.skill / 200 + (hasAny(s, 'hob_tech', 'hob_art', 'hob_read') ? 0.08 : 0)),
@@ -4648,7 +4682,7 @@ function parentEvent(s, t) {
       fx: { stress: -2, bonds: 2 }, res: 'Рядом с родителями надёжный человек. Вы приезжаете в гости, а не на смену.' },
     { label: 'Разделить заботы с братьями и сёстрами', hint: sibs ? 'у вас ' + sibs + ' ' + word(sibs, 'брат или сестра', 'брата или сестры', 'братьев и сестёр') + ': вам достанется только часть' : 'вы единственный ребёнок', need: s => sibs > 0, why: 'Вы единственный ребёнок: делить заботу не с кем.',
       odds: true, p: s => cl(0.5 + s.st.bonds / 250, 0.25, 0.85),
-      ok: { fx: { bonds: 4, stress: 2 }, act: s => addCond(s, 'caregiver', 3), res: 'Вы договорились и разделили график. Это не лёгко, но по справедливости.' },
+      ok: { fx: { bonds: 4, stress: 2 }, act: s => addCond(s, 'caregiver', 3), res: 'Вы договорились и разделили график. Это нелегко, но по справедливости.' },
       bad: { fx: { bonds: -6, stress: 6 }, act: s => addCond(s, 'caregiver'), res: 'Не получилось: все нашли причину, почему не могут. Основное легло на вас.' } },
     { label: 'Приезжать по выходным', hint: 'всё на вас, но без переезда', fx: { bonds: 4, stress: 5, health: -2 }, act: s => addCond(s, 'caregiver', 4), res: 'Дорога занимает полдня. Но каждую субботу вас ждут.' },
     { label: 'Оставить как есть', hint: 'тихо, но потом может быть тяжело', fx: { bonds: -12, stress: -1 }, add: ['guilt'], q: [{ in: 8, id: 'guilt', why: 'Решение, которое вы приняли о родителях.' }], res: 'Вы говорите себе, что у каждого свои заботы. Звонки становятся короче.' }
@@ -8971,7 +9005,7 @@ function shareBirth() {
 }
 
 /* ===== Интерфейс: ход игры, время, окна событий, настройки ===== */
-const SYS = new Set(['settings', 'lives', 'more', 'how', 'about', 'help', 'news', 'care', 'lab', 'record', 'map', 'peer', 'cstats', 'privacy']);
+const SYS = new Set(['settings', 'lives', 'more', 'how', 'about', 'help', 'news', 'care', 'record', 'map', 'peer', 'cstats', 'privacy']);
 const blocking = () => !!modal && (SYS.has(modal.kind) || modal.kind === 'spend');
 
 /* ---------- таймер: пауза, очередь, окна поверх ---------- */
@@ -9625,7 +9659,7 @@ function survSVG() {
   const age = Math.min(100, S.age);
   const grid = [0, 0.25, 0.5, 0.75, 1].map(v => `<line class="g" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="t" x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${Math.round(v * 100)}</text>`).join('') +
     [0, 20, 40, 60, 80, 100].map(a => `<text class="t" x="${X(a)}" y="${H - 10}" text-anchor="middle">${a}</text>`).join('');
-  return `<svg class="surv" viewBox="0 0 ${W} ${H}" role="img" aria-label="Кривая доживаемости: доля людей той же когорты, доживших до каждого возраста">` +
+  return `<svg class="surv" viewBox="0 0 ${W} ${H}" role="img" aria-label="Кривая выживаемости: доля людей той же когорты, доживших до каждого возраста">` +
     grid + `<path class="oth" d="${path(other)}"/><path class="me" d="${path(mine)}"/>` +
     `<line class="now" x1="${X(age)}" x2="${X(age)}" y1="${T}" y2="${T + ih}"/><circle class="dot" cx="${X(age)}" cy="${Y(mine[age])}" r="5"/></svg>` +
     `<p class="legend muted small"><span class="lk me"></span> ${esc(S.ctx.c0.n)} <span class="lk oth"></span> ${esc(otherName)} <span class="muted">· по вертикали: сколько из 100 доживают, по горизонтали: возраст</span></p>`;
@@ -9654,7 +9688,7 @@ function mapHTML(m) {
     `<div class="lifemap" role="group" aria-label="Годы жизни" style="--cols:10">${cells}</div>` +
     `<p class="legend muted small"><span class="cell lived mini"></span> прожито <span class="cell major mini lived"></span> важное решение <span class="cell note mini lived"></span> ваша заметка <span class="cell cur mini"></span> сейчас</p>` +
     detail +
-    `<h3 class="lbl">Кривая доживаемости</h3>` + survSVG() +
+    `<h3 class="lbl">Кривая выживаемости</h3>` + survSVG() +
     `<p class="muted small">Доля людей одной когорты (${S.sex === 'f' ? 'девочки' : 'мальчики'}, родившиеся в ${S.birthYear} году), которые доживают до каждого возраста. Расчёт по данным ООН (World Population Prospects 2024) для когорты вашей страны: ориентир, а не прогноз вашей жизни.</p>`;
 }
 function bindMap(m) {
@@ -10178,6 +10212,7 @@ function bindCstats(m) {
 
 const PRIVACY_HTML = `<p class="text small">Игра ничего не отправляет на сервер и не просит имени, почты или регистрации.</p>
 <ul class="how small"><li>Настройки, записи прошлых жизней и ваши заметки хранятся только в памяти вашего браузера на этом устройстве. Их можно перенести кодом или удалить в мемориале.</li>
+<li>Незаконченная жизнь тоже сохраняется только в браузере; её можно продолжить или удалить на главном экране.</li>
 <li>Если очистить данные браузера, записи пропадут: восстановить их нельзя.</li>
 <li>Шрифты подгружаются с Google Fonts, поэтому этот сервис видит обычный запрос на загрузку шрифта.</li>
 <li>Кнопка «Поделиться» на карточке рождения копирует короткий текст без имени.</li></ul>`;
@@ -10492,105 +10527,6 @@ function bindLives(m) {
   };
 }
 
-/* ---------- лаборатория ---------- */
-function labRun(m, n, make, each, done) {
-  const id = m.runId = (m.runId || 0) + 1, out = [];
-  let i = 0;
-  const chunk = () => {
-    if (modal !== m || m.runId !== id) return;
-    const t0 = Date.now();
-    while (i < n && Date.now() - t0 < 30) { out.push(each(make(i), i)); i++; }
-    const bar = $('labBar'); if (bar) bar.style.width = (i / n * 100) + '%';
-    if (i < n) setTimeout(chunk, 0); else done(out);
-  };
-  chunk();
-}
-
-function labHTML(m) {
-  const tabs = [['world', 'Мир'], ['five', 'Пятеро'], ['years', 'Те же годы, другая эпоха']];
-  const head = mhead('Лаборатория') +
-    `<p class="muted small">Здесь жизни проходят сами, выбор делает случай. Это опыт на статистике, а не прогноз.</p>` +
-    `<div class="segs tabs" role="tablist" aria-label="Разделы">` + tabs.map(([k, n]) => `<button class="seg${m.tab === k ? ' on' : ''}" role="tab" aria-selected="${m.tab === k}" data-tab="${k}">${n}</button>`).join('') + `</div>`;
-  const prog = m.running ? `<div class="bar big"><i id="labBar" style="width:0"></i></div><p class="muted small">Считаю…</p>` : '';
-  if (m.tab === 'world') {
-    const r = m.res;
-    return head + `<p class="text small">Сколько жизней прожить: <span class="segs inl">` +
-      [100, 300, 1000].map(n => `<button class="seg${m.n === n ? ' on' : ''}" data-n="${n}">${n}</button>`).join('') + `</span></p>` +
-      `<button class="primary slim inl" id="labGo"${m.running ? ' disabled' : ''}>Запустить</button>` + prog +
-      (r ? `<table class="tbl"><tbody>` +
-        `<tr><th>Жизней</th><td>${r.n}</td></tr>` +
-        `<tr><th>Умерли до пяти лет</th><td>${r.u5}% <small class="muted">по данным стран: ${r.u5e}%</small></td></tr>` +
-        `<tr><th>Не дожили до 60</th><td>${r.p60}%</td></tr>` +
-        `<tr><th>Дожили до 80</th><td>${r.p80}%</td></tr>` +
-        `<tr><th>Средний возраст конца</th><td>${r.med} ${word(r.med, 'год', 'года', 'лет')} <small class="muted">(медиана)</small></td></tr>` +
-        `<tr><th>Семьи из беднейших 3 десятков</th><td>${r.low} ${word(r.low, 'год', 'года', 'лет')}</td></tr>` +
-        `<tr><th>Семьи из середины (4–7)</th><td>${r.mid} ${word(r.mid, 'год', 'года', 'лет')}</td></tr>` +
-        `<tr><th>Семьи из верхних 3 десятков</th><td>${r.high} ${word(r.high, 'год', 'года', 'лет')}</td></tr></tbody></table>` +
-        `<p class="muted small">Чем больше жизней, тем точнее цифры. При ста они заметно прыгают.</p>` : '');
-  }
-  if (m.tab === 'five') {
-    return head + `<button class="primary slim inl" id="labGo"${m.running ? ' disabled' : ''}>${m.five ? 'Ещё пятёрку' : 'Родить пятерых'}</button>` + prog +
-      (m.five ? `<p class="muted small">Пятеро родились в одну секунду. Страны выпали по числу рождений.</p><ul class="plain five">` +
-        m.five.map(x => `<li><b>${esc(x.country)}</b> · ${sexOf(x.sex)}, семья ${x.decile}-го десятка<br>${ageText(x.age)}${x.dead && !softOn() ? ', ' + esc(x.cause) : ''}${x.dead ? '' : ' · дожил до ста'}</li>`).join('') + `</ul>` : '');
-  }
-  const cs = [...COUNTRIES].sort((a, b) => a.n.localeCompare(b.n, 'ru'));
-  const r = m.yr;
-  return head + `<div class="form"><label for="yrC">Страна</label><select id="yrC"><option value="">Случайная</option>` +
-    cs.map(c => `<option value="${c.i}"${m.iso === c.i ? ' selected' : ''}>${esc(c.n)}</option>`).join('') + `</select>` +
-    `<label for="yrS">Пол</label><select id="yrS"><option value="m"${m.sex === 'm' ? ' selected' : ''}>Мужской</option><option value="f"${m.sex === 'f' ? ' selected' : ''}>Женский</option></select></div>` +
-    `<button class="primary slim inl" id="labGo"${m.running ? ' disabled' : ''}>Прожить в каждой эпохе по 60 жизней</button>` + prog +
-    (r ? `<p class="text small">${esc(r.name)}, ${sexOf(r.sex)}</p><div class="tblwrap"><table class="tbl wide"><thead><tr><th>Эпоха</th><th>Ожидаемо</th><th>До 5 лет</th><th>Доход на человека в год</th><th>В игре, медиана</th></tr></thead><tbody>` +
-      r.rows.map(x => x.none ? `<tr><th>${eraLabel(x.era)}</th><td colspan="4" class="muted">нет данных по этой стране</td></tr>`
-        : `<tr><th>${eraLabel(x.era)}</th><td>${fmt1(x.le)}</td><td>${x.u5} из 1000</td><td>${mny(x.gdp, x)}</td><td>${x.med}</td></tr>`).join('') +
-      `</tbody></table></div><p class="muted small">Ожидаемая продолжительность и детская смертность берутся из статистики эпохи. Последняя колонка получена игрой. Разрыв между эпохами показывает, что значит родиться раньше или позже.</p>` : '');
-}
-
-function bindLab(m) {
-  document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { m.tab = b.dataset.tab; m.running = false; m.runId = (m.runId || 0) + 1; m.focused = true; rerenderKeep(); });
-  document.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { m.n = +b.dataset.n; m.focused = true; rerenderKeep(); });
-  const era = opt.era === 'any' ? 'any' : +opt.era;
-  const go = $('labGo');
-  if (!go) return;
-  if (m.tab === 'years') {
-    $('yrC').onchange = e => { m.iso = e.target.value; };
-    $('yrS').onchange = e => { m.sex = e.target.value; };
-  }
-  go.onclick = () => {
-    m.running = true; m.focused = true; rerenderKeep();
-    if (m.tab === 'world') {
-      const u5e = [];
-      labRun(m, m.n, () => autoplay({ era, mode: opt.mode }), s => { u5e.push(s.ctx.c0.u5); return { age: s.age, dec: s.ctx.decile }; }, list => {
-        const n = list.length, ages = list.map(x => x.age);
-        const med = a => median(a.map(x => x.age));
-        m.res = {
-          n, u5: Math.round(pc(list.filter(x => x.age < 5).length, n)), u5e: (u5e.reduce((a, b) => a + b, 0) / n / 10).toFixed(1).replace('.', ','),
-          p60: pc(list.filter(x => x.age < 60).length, n), p80: pc(list.filter(x => x.age >= 80).length, n), med: median(ages),
-          low: med(list.filter(x => x.dec <= 3)), mid: med(list.filter(x => x.dec >= 4 && x.dec <= 7)), high: med(list.filter(x => x.dec >= 8))
-        };
-        m.running = false; rerenderKeep();
-      });
-    } else if (m.tab === 'five') {
-      labRun(m, 5, () => autoplay({ era, mode: opt.mode }), s => ({ country: s.ctx.name, sex: s.sex, decile: s.ctx.decile, age: s.age, dead: s.dead, cause: s.cause }), list => {
-        m.five = list; m.running = false; rerenderKeep();
-      });
-    } else {
-      const sex = m.sex || 'm', iso = m.iso || pickCountry(Math.random, 'births', eraList(2024)).i;
-      const eras = ERA_YEARS.filter(y => eraRow(y, iso));
-      const none = ERA_YEARS.filter(y => !eraRow(y, iso)).map(y => ({ era: y, none: true }));
-      const total = eras.length * 60, rows = [];
-      labRun(m, total, i => autoplay({ era: eras[Math.floor(i / 60)], country: { i: iso }, sex }), (s, i) => ({ e: eras[Math.floor(i / 60)], age: s.age }), list => {
-        eras.forEach(y => {
-          const c = eraRow(y, iso), ages = list.filter(x => x.e === y).map(x => x.age);
-          rows.push({ era: y, le: sex === 'f' ? c.leF : c.leM, u5: Math.round(c.u5), gdp: c.gdp, pl: c.pl, med: median(ages) });
-        });
-        const all = [...rows, ...none].sort((a, b) => a.era - b.era);
-        m.yr = { name: (eraRow(eras[0], iso) || {}).n || iso, sex, rows: all };
-        m.running = false; rerenderKeep();
-      });
-    }
-  };
-}
-
 /* ---------- меню «Ещё» и справка ---------- */
 function moreHTML() {
   const rows = [['about', 'Об игре', 'как играть, откуда данные, чего здесь нет'], ['news', 'Что нового', 'три последние версии'], ['privacy', 'Конфиденциальность', 'что хранится и где']];
@@ -10608,7 +10544,8 @@ const NEWS = [
     'Счётчики больше не мигают нулём, год рождения выбирается кнопками, у списка стран для сравнения появился поиск.',
     'Все решения и события открываются окнами; окна с итогом закрываются сами через 3 секунды, если не навести мышь.',
     'Темп зависит от длительности жизни в настройках: при «около часа» год занимает в среднем около минуты на 1×, на 4× и 16× пропорционально быстрее. Полоска под панелью показывает ожидание, «Далее »» его пропускает.',
-    'Запись о смерти переделана: «Лучшие моменты жизни» (сначала отмеченные звездой), затем кнопки «Сохранить жизнь» и «Начать новую жизнь». Фокус года и траты теперь над летописью.',
+    'Финальный экран переделан: по порядку показываются главные моменты жизни с картинками и полосой жизни, ниже сравнение с жителями вашей страны, затем кнопки «Сохранить жизнь» и «Начать новую жизнь». Карточку можно скачать; публикация в ленте и поддержка проекта пока заглушки.',
+    'Раздел «Об игре» обновлён и точнее называет источники данных; «Лабораторию» убрали.',
     'Незаконченная жизнь сохраняется сама: после перезагрузки на главной появится «Продолжить жизнь». Если ход вдруг застрял, игра через 5 секунд двигает его дальше.',
     'Мемориал хранит три последние жизни: новая заменяет самую старую.',
     '«Если вам тяжело» теперь только номера поддержки по темам игры.',
@@ -10648,18 +10585,29 @@ const NEWS = [
   ['v0.5', 'Данные по странам Gapminder, пол и достаток при рождении, закрытые двери.'],
   ['v0.1', 'Первый прототип: короткая жизнь и выбор из развилок.']
 ];
-const ABOUT_HTML = `<h3 class="lbl">Как играть</h3>
-<ul class="how small"><li>Страна, пол, семья и достаток выпадают случайно, по реальной статистике. Год рождения можно выбрать на главном экране.</li>
-<li>Время идёт само, а важные развилки ждут вас: вы выбираете решения. Есть пауза, скорость до 16× и «Авто», который играет за вас.</li>
-<li>В 5, 15, 30, 50 и 70 лет время замирает и задаёт один вопрос: ответ можно записать или пропустить.</li>
-<li>Деньги считаются в долларах по паритету покупательной способности и в местной валюте. Жизнь заканчивается по статистике страны, а не по вашему желанию.</li></ul>
+const aboutHTML = () => `<h3 class="lbl">Как играть</h3>
+<ul class="how small"><li>Страна, пол, семья и достаток выпадают случайно, по реальной статистике: чаще туда, где рождается больше детей. На главном экране можно выбрать эпоху (прошлое, сегодня, будущее или любую дату), способ выбора страны и длительность жизни в игре.</li>
+<li>Время идёт само, а важные развилки открываются окнами и ждут вас. Есть пауза, скорость 1×, 4× и 16×, кнопка «Далее »» (пропустить ожидание) и «Авто», который играет за вас.</li>
+<li>Длительность жизни (около 30 минут, около часа, около полутора часов или «Без таймера») задаёт, сколько в среднем длится один год игры. Если вы думаете дольше плана, игра быстрее листает тихие годы.</li>
+<li>С 5 лет в блоке «Фокус этого года» можно выбрать, на что уходят силы, и открыть «Траты и вложения». Фокус сдвигает шансы, но ничего не гарантирует.</li>
+<li>В 5, 15, 30, 50 и 70 лет время замирает и задаёт один вопрос. Ответ можно записать или пропустить, а сами паузы выключаются в настройках.</li>
+<li>Жизнь заканчивается по статистике страны и по вашим выборам, а не по желанию. В конце вы получаете запись о смерти и карточку жизни, а три последние жизни хранятся в мемориале.</li>
+<li>Незаконченная жизнь сохраняется сама: после перезагрузки её можно продолжить на главном экране.</li></ul>
+<h3 class="lbl">Деньги</h3>
+<p class="small">${curNote()}</p>
 <h3 class="lbl">Откуда данные</h3>
-<p class="small">Показатели стран (рождаемость, продолжительность жизни, детская смертность, доходы, образование и другие): <a href="https://github.com/open-numbers/ddf--gapminder--systema_globalis" target="_blank" rel="noopener">Gapminder Systema Globalis</a>, лицензия CC BY 4.0, то есть данные ООН, Всемирного банка и других открытых источников. Зарплаты профессий: BLS (США), пенсионный возраст: ОЭСР, образование: ЮНЕСКО. Хроника войн и кризисов собрана по открытым сообщениям.</p>
+<p class="small">Показатели стран (рождаемость, продолжительность жизни, детская смертность, доходы, образование и другие) собраны в открытом сборнике <a href="https://github.com/open-numbers/ddf--gapminder--systema_globalis" target="_blank" rel="noopener">Gapminder Systema Globalis</a>, лицензия CC BY 4.0. Он опирается на данные ООН (World Population Prospects), Всемирного банка и ВОЗ. Для каждого показателя взят последний доступный год или снимок выбранной эпохи (1950, 1970, 1990, 2010, 2024 или 2050).</p>
+<ul class="how small"><li>Охват высшим образованием и доля частных школ: ЮНЕСКО (UIS).</li>
+<li>Пенсионный возраст: ОЭСР («Pensions at a Glance 2025»), Eläketurvakeskus и национальные законы; для остальных стран оценка по уровню дохода.</li>
+<li>Зарплатные коэффициенты профессий: BLS (США) и таблицы окладов военных на 2026 год.</li>
+<li>Религии, крупные города и возраст матери при первом ребёнке: CIA World Factbook. Удовлетворённость жизнью: World Happiness Report.</li>
+<li>С кем живёт ребёнок: обзоры ООН по домохозяйствам и OECD Family Database; для стран вне выборки это оценка по региону.</li>
+<li>Призыв: данные на 2026 год, сроки и доли призываемых приблизительные, прошлые годы тоже.</li></ul>
 <h3 class="lbl">Чего здесь нет</h3>
-<ul class="how small"><li>Будущее около 2050 года — грубая оценка, а не прогноз.</li>
-<li>Счётчики рождений и смертей на главной — оценка по средним данным ООН, а не живые данные.</li>
-<li>События, цены, последствия и зарплаты условные. Игра не заменяет статистику и не оценивает людей.</li>
-<li>Игра сделана по мотивам идеи «1 из 8 миллиардов», с её авторами не связана, тексты и устройство сделаны заново.</li></ul>`;
+<ul class="how small"><li>Будущее около 2050 года считается по прогнозу ООН и остаётся грубой оценкой.</li>
+<li>Счётчики рождений и смертей на главной считаются по средним данным ООН, это не живые данные.</li>
+<li>События, цены, последствия решений и зарплаты условные. Игра не заменяет статистику и не оценивает людей.</li>
+<li>Игра сделана по мотивам идеи «1 из 8 миллиардов». С её авторами она не связана, тексты и устройство сделаны заново.</li></ul>`;
 const CARE_HTML = `<ul class="phones">
 <li><a href="tel:112"><b>112</b></a><span>единый номер экстренных служб, если опасность прямо сейчас</span></li>
 <li><a href="tel:+78002000122"><b>8-800-2000-122</b></a><span>детский телефон доверия: для детей, подростков и их родителей; бесплатно</span></li>
@@ -10673,10 +10621,9 @@ function sysHTML(m) {
     case 'settings': return settingsHTML();
     case 'more': return moreHTML();
     case 'news': return docHTML('Что нового', NEWS.slice(0, 3).map(([v, t]) => `<h3 class="lbl">${v}</h3><ul class="how small">` + (Array.isArray(t) ? t : [t]).map(x => `<li>${esc(x)}</li>`).join('') + `</ul>`).join(''));
-    case 'about': return docHTML('Об игре', ABOUT_HTML);
+    case 'about': return docHTML('Об игре', aboutHTML());
     case 'care': return mhead('Если вам тяжело') + CARE_HTML;
     case 'lives': return livesHTML(m);
-    case 'lab': return labHTML(m);
     case 'record': return recordHTML(m);
     case 'map': return mapHTML(m);
     case 'peer': return peerHTML(m);
@@ -10690,10 +10637,9 @@ function bindSys(m, card) {
     case 'settings': bindSettings(); break;
     case 'more': card.querySelectorAll('[data-more]').forEach(b => b.onclick = () => {
       const k = b.dataset.more;
-      openModal(k === 'lab' ? { kind: 'lab', tab: 'world', n: 300, wide: true } : { kind: k });
+      openModal({ kind: k });
     }); break;
     case 'lives': bindLives(m); break;
-    case 'lab': bindLab(m); break;
     case 'record': bindRecord(m); break;
     case 'map': bindMap(m); break;
     case 'peer': break;
@@ -11258,9 +11204,8 @@ function endCardHTML() {
   const sv = cohortSurv(s.pts, s.sex, s.birthYear, Math.min(110, s.age))[Math.min(110, s.age)], over = sv != null ? Math.round(sv * 100) : null;
   const pc = s.people && s.people.partner, kids = (s.children || []).filter(k => !k.dead), H = s.hist || [], adult = s.age >= 14;
   const bye = [pc && s.relSince != null ? `${pc.sex === 'f' ? 'супруга' : 'супруг'} ${pc.name}` : null, kids.length ? (kids.length === 1 ? 'ребёнок' : `${kids.length} ${word(kids.length, 'ребёнок', 'ребёнка', 'детей')}`) : null, s.age < 16 ? 'родные' : 'давние друзья'].filter(Boolean);
-  const Hb = H.filter(h => h.a >= 8 && h.a < s.age), best = Hb.length ? Hb.reduce((a, h) => (h.h > a.h ? h : a), Hb[0]) : null, peakNw = H.length ? H.reduce((a, h) => (h.nw > a.nw ? h : a), H[0]) : null;
+  const Hb = H.filter(h => h.a >= 8 && h.a < s.age), best = Hb.length ? Hb.reduce((a, h) => (h.h > a.h ? h : a), Hb[0]) : null;
   const hobbies = [...new Set(s.chron.map(x => { const m = /увлеклись (.+?)\.|увлечение «(.+?)»/.exec(x.text || ''); return m ? (m[1] || m[2]) : null; }).filter(Boolean))].slice(0, 3);
-  const tp0 = peakNw ? rankCountry(s, Math.max(1, peakNw.nw / 12)) : null, topPct = tp0 != null && tp0 <= 50 ? tp0 : null;
   const cell = (a, b) => `<div><dt>${a}</dt><dd>${b}</dd></div>`;
   const grid = [
     cell('Образование', esc(endEdu(s))),
@@ -11271,35 +11216,37 @@ function endCardHTML() {
     best ? cell('Самый счастливый год', `${best.a} ${word(best.a, 'год', 'года', 'лет')}<small>${s.birthYear + best.a} год</small>`) : '',
     cell('Страны, где жили', esc([ctry].concat(s.abroadTo && ctryShort(s.abroadTo) !== ctry ? [ctryShort(s.abroadTo)] : []).join(', '))),
     hobbies.length ? cell('Увлечения', esc(hobbies.join(', '))) : '',
-    adult && peakNw ? cell('Оставленное состояние', `${mny(Math.max(0, netWorth(s)))}${topPct ? `<small>верхние ${topPct}% в стране</small>` : ''}`) : ''
+    adult && H.length ? cell('Оставленное состояние', mny(Math.max(0, netWorth(s)))) : ''
   ].join('');
-  const mom = endMoments();
-  const momHTML = mom.map(o => {
-    const x = o.c, head = x.title ? `<b>${esc(x.title)}</b>` : '', body = x.title ? [x.pick ? 'Решение: ' + x.pick : '', x.res || ''].filter(Boolean).join('. ') : (x.text || '');
-    return `<li${o.star ? ' class="st"' : ''}><span class="ag">${esc(ageText(x.age))}</span><span class="tx">${head}${body ? `<span>${esc(String(body).slice(0, 220))}</span>` : ''}</span>${o.star ? '<i aria-label="отмечено вами">★</i>' : ''}</li>`;
-  }).join('');
   const peers = s.peers.map((p, i) => { const pi = peerInfo(p, i), fm = p.sex === 'f', ca = peerCauseSafe(p); return { die: p.die, me: false, h: `<b>${esc(pi.nm)} · ${esc(ctryShort(p.name))}</b><span>${p.die} ${word(p.die, 'год', 'года', 'лет')}. Родил${fm ? 'ась девочкой' : 'ся мальчиком'} ${pi.rural ? 'в сельской местности' : 'в городе'}${ca && !softOn() ? `. Причина: ${esc(ca)}` : ''}.</span>` }; });
   peers.push({ die: s.age, me: true, h: `<b>${esc(s.name)} · ${esc(ctry)} · это были вы</b><span>${s.age} ${word(s.age, 'год', 'года', 'лет')}. ${esc(endStory(s))}</span>` });
   peers.sort((a, b) => a.die - b.die);
   const surv = `${over != null ? `Для ${sw[1]}, родивше${f ? 'йся' : 'гося'} в стране «${esc(ctry)}» в тот же год, что и вы, вероятность прожить дольше вас — около ${over}%. ` : ''}${le != null ? `Ожидаемая продолжительность жизни там при рождении: ${fmt1(le)} ${word(Math.round(le), 'год', 'года', 'лет')}${s.age < le ? `, вы прожили на ${fmt1(le - s.age)} меньше` : ''}.` : ''}`;
+  const cmp = endCompare();
   return `<section class="deathrec dr2">` +
     `<div class="drh"><span>Запись о смерти</span><span>№ ${esc(String(rec.iso || ''))}-${s.birthYear}-${String(s.age).padStart(3, '0')}</span></div>` +
     `<h2>${esc(s.name)}</h2>` +
     `<p class="drsub">${s.birthYear} – ${s.birthYear + s.age} · прожито ${s.age} ${word(s.age, 'год', 'года', 'лет')}</p>` +
     `<p class="drsub">${esc(ctry)}${s.ctx.city ? ' · ' + esc(s.ctx.city) : ''} · ${sw[2]} пол</p>` +
-    `<p class="drstory">${esc(endStory(s))}</p>` +
     (s.dead && !softOn() ? `<div class="drcause"><span>Причина смерти</span><b>${esc(s.cause)}</b></div>` : '') +
+    `<h3 class="drh3">Ваша жизнь по порядку</h3><p class="drnote">Главные выборы и события. Нажмите на точку на полосе, чтобы перейти к нужному моменту; звёздочкой отмечены те, что вы отметили в летописи.</p>` +
+    `<div class="reel" id="reel"><div class="reelpic" id="reelPic"></div><div class="reelcap" id="reelCap" aria-live="polite"></div>` +
+    `<div class="reelctl"><button class="seg solo" id="rPrev" aria-label="Предыдущий момент">‹ Назад</button><button class="seg solo" id="rPlay">Пауза</button><button class="seg solo" id="rNext" aria-label="Следующий момент">Дальше ›</button><span class="muted small" id="rCnt"></span></div>` +
+    `<div class="reelbar" id="reelBar"></div></div>` +
+    `<p class="drstory">${esc(endStory(s))}</p>` +
     (surv ? `<p class="drnote">${surv}</p>` : '') +
     `<dl class="drgrid">${grid}</dl>` +
-    (momHTML ? `<h3 class="drh3">Лучшие моменты жизни</h3><p class="drnote">Сначала то, что вы отметили звездой в летописи, затем самое важное из жизни.</p><ol class="drmom">${momHTML}</ol>` : '') +
+    (cmp ? `<h3 class="drh3">Чего вы достигли по сравнению с другими жителями страны</h3><p class="drnote">Сравнение с жителями страны «${esc(ctry)}»: по средним данным и по месту в распределении доходов. Это оценка, а не оценка вас как человека.</p>${cmp}` : '') +
     `<h3 class="drh3">Пятеро людей, родившихся в одну секунду</h3><ul class="drpeers">${peers.map(p => `<li${p.me ? ' class="me"' : ''}>${p.h}</li>`).join('')}</ul>` +
     `<p class="drnote">Никто из них не выбирал, где родиться.</p>` +
-    `<h3 class="drh3">Письмо на память</h3><p class="drnote">Несколько слов о том, что вы поняли. Они попадут на карточку записи.</p>` +
+    `<h3 class="drh3">Письмо на память</h3><p class="drnote">Несколько слов о том, что вы поняли. Они попадут на карточку жизни.</p>` +
     `<textarea id="letter" rows="3" maxlength="500" placeholder="Можно оставить пустым" aria-label="Письмо на память">${esc(S.letter || '')}</textarea>` +
     `<div class="drbtns"><button class="primary" id="drSave">Сохранить жизнь</button><button class="ghost" id="goNew">Начать новую жизнь</button></div>` +
     `<p class="drnote" id="letterMsg" role="status"></p>` +
-    `<div class="drlinks"><button class="link" id="goRec">Карточка записи</button><button class="link" id="goMap">Карта жизни</button><button class="link" id="goLives">Мемориал</button><button class="link" id="goCare2">Если вам тяжело</button></div>` +
-    `<div id="donateSlot"></div>` +
+    `<h3 class="drh3">Карточка жизни</h3><p class="drnote">Картинка с вашей жизнью: имя, возраст, страна, причина и письмо.</p>` +
+    `<div class="drbtns"><button class="ghost" id="goRec">Скачать карточку жизни</button><button class="ghost" id="drFeed">Опубликовать в ленте</button><button class="ghost" id="drDonate">Поддержать проект</button></div>` +
+    `<p class="drnote" id="stubMsg" role="status"></p>` +
+    `<div class="drlinks"><button class="link" id="goMap">Карта жизни</button><button class="link" id="goLives">Мемориал</button><button class="link" id="goCare2">Если вам тяжело</button></div>` +
     `</section>`;
 }
 renderEnd = function (st) {
@@ -11314,12 +11261,32 @@ renderEnd = function (st) {
   let ask = false;
   $('goNew').onclick = () => {
     if (!saved && !ask) { ask = true; msg('Жизнь ещё не сохранена. Нажмите «Начать новую жизнь» ещё раз, чтобы продолжить без сохранения.'); $('goNew').textContent = 'Всё равно начать новую'; return; }
-    S = null; view = { name: 'start' }; modal = null; disp = null; clearTimer(); render(); window.scrollTo({ top: 0, behavior: 'auto' });
+    window.__reelStop = true; S = null; view = { name: 'start' }; modal = null; disp = null; clearTimer(); render(); window.scrollTo({ top: 0, behavior: 'auto' });
   };
   $('goRec').onclick = () => { S.rec = S.rec || lifeSummary(S); S.rec.letter = S.letter || ''; openModal({ kind: 'record', rec: S.rec, wide: true }); };
+  $('drFeed').onclick = () => { const e = $('stubMsg'); if (e) e.textContent = 'Лента карточек появится позже: публикация будет доступна за поддержку проекта. Пока карточку можно скачать.'; };
+  $('drDonate').onclick = () => { const e = $('stubMsg'); if (e) e.textContent = 'Ссылка для поддержки проекта появится позже. Спасибо, что играете.'; };
   $('goLives').onclick = () => openModal({ kind: 'lives' });
   $('goMap').onclick = () => openModal({ kind: 'map' });
   $('goCare2').onclick = () => openModal({ kind: 'care' });
+  /* показ моментов жизни */
+  const slides = endReel(); let i = 0, playing = true, T = null;
+  const show = k => {
+    i = (k + slides.length) % slides.length; const m = slides[i];
+    const pic = $('reelPic'), cap = $('reelCap'); if (!pic) return;
+    pic.innerHTML = momentSVG(m);
+    cap.innerHTML = `<p class="rtag"><span class="ag">${esc(ageText(m.age))}</span><span>${S.birthYear + m.age} год</span><span class="muted">${REEL_CAT[m.cat] || ''}</span>${m.star ? '<i>★ отмечено вами</i>' : ''}</p><h4>${esc(m.title)}</h4>` + (m.pick ? `<p class="rpick">Вы выбрали: ${esc(m.pick)}</p>` : '') + (m.body ? `<p class="rbody">${esc(m.body)}</p>` : '');
+    $('reelBar').innerHTML = reelBarHTML(slides, i);
+    $('rCnt').textContent = `${i + 1} из ${slides.length}`;
+    $('reelBar').querySelectorAll('.rdot').forEach(b => b.onclick = () => { playing = false; sync(); show(+b.dataset.k); });
+  };
+  const sync = () => { const b = $('rPlay'); if (b) b.textContent = playing ? 'Пауза' : '▶ Показ'; clearTimeout(T); if (playing) T = setTimeout(tick, 4800); };
+  const tick = () => { if (!$('reel') || window.__reelStop || view.name !== 'end') return; if (i < slides.length - 1) { show(i + 1); sync(); } else { playing = false; sync(); } };
+  window.__reelStop = false;
+  $('rPrev').onclick = () => { playing = false; sync(); show(i - 1); };
+  $('rNext').onclick = () => { playing = false; sync(); show(i + 1); };
+  $('rPlay').onclick = () => { if (!playing && i >= slides.length - 1) show(0); playing = !playing; sync(); };
+  show(0); sync();
 };
 (() => {
   const rl = renderLog;
@@ -11379,6 +11346,110 @@ function resumeRun() {
   }, 1000);
 })();
 if (!S && view.name === 'start') { try { render(); } catch (e) { console.warn(e); } }
+
+
+/* ---------- v2.9.9: финальный экран: полоса жизни, моменты картинками, сравнение со страной ---------- */
+const MOMENT_RULES = [
+  ['school', /школ|учебн|класс|выпускн|экзамен|контрольн|Выбор пути|Двор или секция|Каникулы|Лето|Учитель|Травля|Ссора/i, 12],
+  ['uni', /изуча|Диплом|Научный руководитель|Выпуск из военного|Иностранный язык|Какую профессию|После выпуска/i, 55],
+  ['love', /любовь|брак|Предложение$|женится|выходит замуж|Дрогнувшее|Симпатия|Вечеринка/i, 40],
+  ['child', /ребёнк|ребенк|Вы ждёте|Подросток|Внуки|Школа для ребёнка|Домашние дела/i, 40],
+  ['pet', /питомц|щен|котён/i, 25],
+  ['retire', /пенсию|Свободные дни|Последняя большая|Силы уже не те|Что останется|Старое решение/i, 55],
+  ['move', /Переезд|Новый мир|Уехать|Тоска по дому|за границ|Дорога отнимает/i, 45],
+  ['health', /болезн|диагноз|давлен|боль|Травма|Сахар|Спина|Кашель|Сердце|пить|Привычка|Выгорание|Нет сил|Движение/i, 35],
+  ['loss', /Потеря|Провожаете|Слишком рано|отдалились|расходятся|Беда/i, 45],
+  ['money', /Накопления|Азарт|лотере|Наследство|Долг|Платёж|Деньги|Купить|Свой угол|банка|Земля|Аренда|сбережен|Дело растёт|Стартап|Проект/i, 30],
+  ['job', /работ|Повышение|Сокращение|Предложени|Наставник|Выслуга|звание|Что дальше|Чего от вас ждут|Остановиться|Кризис|Призыв|Служба/i, 38],
+  ['friends', /друг|компани|круг|Допоздна|волонтёр|Встреча выпускников|Помощь/i, 22],
+  ['hobby', /увлечен|любите|Каким вы стали|Завести новое|Экран|Социальные|Подарок|Олимпиада/i, 20]
+];
+const catOf = c => { const t = (c.title || '') + ' ' + (c.text || ''); const r = MOMENT_RULES.find(x => x[1].test(t)); return r ? r[0] : 'road'; };
+const MOMENT_TOP = /Первый день в школе|Выбор пути|Что вы будете изучать|Диплом|Выпускные|первую работу|Пришла любовь|Разговор о браке|Предложение$|Вы ждёте|Пора на пенсию|Уехать за границу|Новый мир|Что останется|Затяжная болезнь|диагноз|Внуки|Завести ребёнка/i;
+function endReel() {
+  const s = S, pins = s.pinned || [];
+  const all = chronEntries(s.age).filter(c => !c.fact && !c.birth && c.age != null && c.lvl === 'major' && c.title && !/присматривать/.test(c.title));
+  const scored = all.map(c => { const cat = catOf(c), r = MOMENT_RULES.find(x => x[0] === cat), star = pins.includes(chronKey(c)); return { c, cat, star, sc: (star ? 100 : 0) + (MOMENT_TOP.test(c.title || '') ? 60 : 0) + (r ? r[2] : 5) + c.age * 0.02 }; });
+  scored.sort((a, b) => b.sc - a.sc);
+  const per = {}, out = [];
+  for (const m of scored) { per[m.cat] = (per[m.cat] || 0); if (!m.star && per[m.cat] >= 2) continue; per[m.cat]++; out.push(m); if (out.length >= 11) break; }
+  out.sort((a, b) => a.c.age - b.c.age);
+  const place = [s.ctx.city, s.ctx.c0 ? s.ctx.c0.n : s.ctx.name].filter(Boolean).join(', ');
+  const slides = [{ age: 0, cat: 'home', title: 'Рождение', body: `${s.name} родил${s.sex === 'f' ? 'ась' : 'ся'} ${endSexW(s)[0]} в ${endWealthW(s.ctx.decile || 5)}. ${s.ctx.city ? 'Место: ' + s.ctx.city + ', ' : 'Страна: '}${String(place.split(', ').pop()).replace(/\s*\(.*\)/, '')}.`, star: false }];
+  out.forEach(m => { const c = m.c; slides.push({ age: c.age, cat: m.cat, title: c.title || 'Событие', pick: c.pick ? String(c.pick) : '', body: String(c.res || c.text || '').slice(0, 260), star: m.star }); });
+  slides.push({ age: s.age, cat: 'end', title: s.dead ? 'Жизнь закончилась' : 'Долгая жизнь позади', body: `Прожито ${s.age} ${word(s.age, 'год', 'года', 'лет')}${s.dead && !softOn() ? '. Причина: ' + s.cause : ''}.`, star: false });
+  return slides;
+}
+/* картинка к моменту: простая пиксельная сцена по теме и возрасту */
+function momentSVG(m) {
+  const r = mulberry(hashStr('mom' + (S.regNo || S.name) + m.age + m.title));
+  const age = m.age, rural = !!S.ctx.rural, W = 320, H = 100, cat = m.cat;
+  const phase = cat === 'loss' || cat === 'end' ? 4 : cat === 'retire' ? 2 : age < 18 ? 0 : age < 45 ? 1 : age < 65 ? 2 : 3;
+  const SKY = [['#bfe0f2', '#e9f4fa'], ['#a9d3ee', '#e3f1f9'], ['#f0b98a', '#f8e0b8'], ['#4a4f7a', '#c88f86'], ['#9aa3ad', '#cfd5da']][phase];
+  const g = [`<defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${SKY[0]}"/><stop offset="1" stop-color="${SKY[1]}"/></linearGradient></defs><rect width="${W}" height="${H}" fill="url(#mg)"/>`];
+  const R = (x, y, w, h, c, o) => g.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"${o ? ` opacity="${o}"` : ''}/>`);
+  if (phase === 3) for (let i = 0; i < 12; i++) R(Math.floor(r() * W), Math.floor(r() * 40), 1.5, 1.5, '#fff', .8);
+  else if (phase < 4) g.push(`<circle cx="${230 + Math.floor(r() * 70)}" cy="20" r="8" fill="${phase === 2 ? '#f5a35c' : '#fff3c2'}"/>`);
+  if (phase === 4) for (let i = 0; i < 18; i++) R(Math.floor(r() * W), Math.floor(r() * 80), 1, 5, '#7e8a96', .6);
+  R(0, 84, W, 16, rural || cat === 'retire' ? '#86ad74' : '#7d8791');
+  const fig = (x, h, c, o = {}) => { R(x, 92 - h, 5, h, c); R(x, 92 - h - 5, 5, 5, '#e6c9a8'); R(x, 92 - h - 6, 5, 2, o.grey ? '#cfcfcf' : '#5a4636'); if (o.cap) { R(x - 1, 92 - h - 8, 7, 2, '#222'); R(x + 1, 92 - h - 10, 3, 2, '#222'); } if (o.bag) R(x + 5, 92 - h + 4, 4, 5, '#6b4a2b'); if (o.cane) R(x - 2, 92 - h + 5, 1.5, h - 5, '#6b4a2b'); };
+  const house = (x, y, w = 40, c = '#d9c7a3') => { R(x, y, w, 92 - y, c); g.push(`<path d="M${x - 3} ${y} L${x + w / 2} ${y - 14} L${x + w + 3} ${y} Z" fill="#a4553d"/>`); R(x + w / 2 - 3, 92 - 14, 6, 14, '#6b5a44'); R(x + 5, y + 6, 6, 6, '#bcd8ea'); R(x + w - 11, y + 6, 6, 6, '#bcd8ea'); };
+  const heart = (x, y) => { R(x, y, 3, 3, '#d9534f'); R(x + 4, y, 3, 3, '#d9534f'); R(x - 1, y + 2, 9, 3, '#d9534f'); R(x + 1, y + 5, 5, 2, '#d9534f'); R(x + 2, y + 7, 3, 1.5, '#d9534f'); };
+  const h0 = age < 3 ? 6 : age < 14 ? 10 : 15, x0 = 150;
+  const block = (x, w, h, c) => { R(x, 92 - h, w, h, c); for (let wy = 92 - h + 5; wy < 86; wy += 8) for (let wx = x + 4; wx < x + w - 4; wx += 8) R(wx, wy, 4, 4, '#dbe7f0'); };
+  switch (cat) {
+    case 'home': house(110, 62, 56); fig(x0 + 50, 16, '#7a6b8f'); fig(x0 + 62, h0 < 10 ? 6 : 8, '#3f6f9a'); break;
+    case 'school': R(70, 58, 150, 34, '#d6b98c'); g.push('<path d="M66 58 L145 40 L224 58 Z" fill="#a4553d"/>'); R(139, 78, 12, 14, '#6b5a44'); [82, 100, 118, 164, 182, 200].forEach(x => R(x, 66, 8, 9, '#bcd8ea')); R(228, 42, 1.5, 50, '#555'); R(229, 43, 12, 7, '#d9534f'); fig(100, 10, '#3f6f9a', { bag: 1 }); fig(112, 9, '#5f8f6a'); fig(240, 10, '#b0695a'); break;
+    case 'uni': R(60, 62, 200, 30, '#d9d2c2'); [72, 100, 128, 156, 184, 212, 240].forEach(x => R(x, 62, 6, 30, '#efe9dc')); g.push('<path d="M54 62 L160 38 L266 62 Z" fill="#b7ad98"/>'); R(150, 74, 20, 18, '#6b5a44'); fig(110, 15, '#3f6f9a', { cap: 1, bag: 1 }); fig(190, 15, '#9a5a6a'); break;
+    case 'job': block(80, 70, 56, '#8b97a6'); block(160, 50, 40, '#a1abb8'); fig(235, 15, '#3f6f9a', { bag: 1 }); R(60, 92, 200, 1.5, '#555'); break;
+    case 'love': g.push('<path d="M120 92 L120 56 Q160 30 200 56 L200 92" fill="none" stroke="#b9a07a" stroke-width="4"/>'); fig(145, 15, '#3f6f9a'); fig(162, 15, '#9a5a6a'); heart(153, 42); break;
+    case 'child': fig(140, 15, '#3f6f9a'); fig(157, 14, '#9a5a6a'); fig(175, 7, '#c58a3b'); R(200, 82, 14, 7, '#8a6fb0'); R(198, 90, 3, 3, '#333'); R(212, 90, 3, 3, '#333'); break;
+    case 'pet': fig(140, 15, '#3f6f9a'); R(170, 86, 11, 6, '#a9763f'); R(179, 82, 6, 6, '#a9763f'); R(172, 91, 2, 2, '#7b5228'); R(178, 91, 2, 2, '#7b5228'); R(184, 84, 2, 2, '#333'); break;
+    case 'move': R(0, 92, W, 8, '#5d6670'); for (let x = 6; x < W; x += 26) R(x, 95, 12, 2, '#e8e0b0'); R(80, 56, 2, 36, '#555'); R(70, 58, 26, 8, '#3f8f6a'); fig(160, 15, '#3f6f9a', { bag: 1 }); R(176, 84, 12, 8, '#8a5a2b'); g.push('<path d="M240 24 L280 28 L240 34 Z" fill="#fff"/>'); R(236, 26, 8, 3, '#dfe6ec'); break;
+    case 'health': R(100, 50, 100, 42, '#e9eef2'); R(144, 56, 12, 4, '#d9534f'); R(148, 52, 4, 12, '#d9534f'); R(142, 76, 16, 16, '#9aa7b3'); [112, 124, 172, 184].forEach(x => R(x, 68, 8, 9, '#bcd8ea')); fig(215, 15, '#3f6f9a', { cane: age > 50 }); break;
+    case 'money': R(100, 56, 100, 36, '#d9d2c2'); [108, 130, 152, 174].forEach(x => R(x, 56, 6, 36, '#efe9dc')); g.push('<path d="M94 56 L150 38 L206 56 Z" fill="#b7ad98"/>'); g.push('<circle cx="150" cy="50" r="5" fill="#e0b23a"/>'); fig(228, 15, '#3f6f9a'); [0, 1, 2].forEach(i => R(60, 88 - i * 3, 14, 3, '#e0b23a')); break;
+    case 'loss': g.push('<path d="M200 92 L200 50 M200 66 L186 54 M200 60 L214 48" stroke="#5c5148" stroke-width="3" fill="none"/>'); fig(150, 15, '#6a7380', { grey: age > 55 }); R(110, 86, 20, 3, '#6b4a2b'); break;
+    case 'friends': fig(120, 15, '#3f6f9a'); fig(140, 15, '#9a5a6a'); fig(160, 14, '#5f8f6a'); fig(180, 15, '#c58a3b'); R(105, 90, 90, 2, '#8a7a5a'); for (let i = 0; i < 5; i++) R(110 + i * 20, 52 + (i % 2) * 4, 3, 3, '#ffd86b'); break;
+    case 'hobby': fig(140, 15, '#3f6f9a'); R(160, 68, 3, 24, '#8a6a3a'); R(155, 56, 18, 14, '#f4f0e6'); R(158, 60, 5, 4, '#d9534f'); R(165, 63, 5, 4, '#3f8f6a'); R(210, 70, 3, 22, '#6b4a2b'); g.push('<circle cx="211" cy="66" r="12" fill="#6fa05f"/>'); break;
+    case 'retire': R(120, 84, 60, 3, '#6b4a2b'); R(124, 87, 3, 5, '#6b4a2b'); R(173, 87, 3, 5, '#6b4a2b'); fig(138, 14, '#6a7fb0', { grey: 1, cane: 1 }); fig(154, 14, '#9a5a6a', { grey: 1 }); R(220, 74, 3, 18, '#6b4a2b'); g.push('<circle cx="221" cy="68" r="14" fill="#6fa05f"/>'); break;
+    case 'end': g.push('<path d="M200 92 L200 52 M200 68 L186 56 M200 62 L214 50" stroke="#5c5148" stroke-width="3" fill="none"/>'); R(130, 84, 40, 3, '#6b4a2b'); break;
+    default: R(0, 92, W, 8, '#5d6670'); for (let x = 6; x < W; x += 26) R(x, 95, 12, 2, '#e8e0b0'); fig(150, h0, '#3f6f9a'); if (age > 60) R(148, 60, 1, 1, '#fff');
+  }
+  return `<svg class="scene" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Условный рисунок к моменту жизни">${g.join('')}</svg>`;
+}
+const REEL_CAT = { home: 'Дом', school: 'Школа', uni: 'Учёба', job: 'Работа', love: 'Любовь', child: 'Дети', pet: 'Питомец', move: 'Дорога', health: 'Здоровье', money: 'Деньги', loss: 'Потери', friends: 'Друзья', hobby: 'Увлечения', retire: 'Покой', end: 'Конец', road: 'Путь' };
+function reelBarHTML(slides, i) {
+  const pct = a => (Math.min(100, a) / END_AGE * 100).toFixed(2);
+  const cur = slides[i];
+  return `<div class="track"><i class="fill" style="width:${pct(cur.age)}%"></i>` +
+    slides.map((m, k) => `<button class="rdot${k === i ? ' on' : ''}${m.star ? ' st' : ''}" data-k="${k}" style="left:${pct(m.age)}%" title="${esc(ageText(m.age))}: ${esc(m.title)}" aria-label="${esc(ageText(m.age))}: ${esc(m.title)}"></button>`).join('') +
+    `<b class="now" style="left:${pct(cur.age)}%"></b></div><div class="scale">${[0, 20, 40, 60, 80, 100].map(a => `<span style="left:${pct(a)}%">${a}</span>`).join('')}</div>`;
+}
+/* сравнение: что вы успели по сравнению с остальными жителями страны */
+function endCompare() {
+  const s = S, f = s.sex === 'f', c0 = s.ctx.c0, cx = cxOf(c0 ? c0.i : ''), H = s.hist || [], rows = [];
+  const rec = s.rec || lifeSummary(s), c = eraRow(rec.era, rec.iso), le = c ? (f ? c.leF : c.leM) : null;
+  const sv = cohortSurv(s.pts, s.sex, s.birthYear, Math.min(110, s.age))[Math.min(110, s.age)], over = sv != null ? Math.round(sv * 100) : null;
+  const pair = (name, me, avg, unit, note) => { const mx = Math.max(me, avg, 0.1); return `<li><div class="cmh"><b>${name}</b><span class="muted small">${note || ''}</span></div><div class="cmb"><span>Вы · ${nfx(me)} ${unit}</span><i style="width:${(me / mx * 100).toFixed(0)}%"></i></div><div class="cmb alt"><span>В среднем в стране · ${nfx(avg)} ${unit}</span><i style="width:${(avg / mx * 100).toFixed(0)}%"></i></div></li>`; };
+  const nfx = v => String(Math.round(v * 10) / 10).replace('.', ',');
+  if (le != null) rows.push(pair('Продолжительность жизни', s.age, le, 'лет', over != null && s.dead ? `дольше вас прожили около ${over}% ровесников` : ''));
+  const EDU = [[/Не успел|Не успела|не посещали/, 0], [/Начальная/, 4], [/Основная/, 9], [/Старшая/, 11], [/Профессиональное/, 12], [/Ремесло/, 13], [/Военное/, 14], [/Университет/, 16]];
+  const et = endEdu(s), ey = (EDU.find(x => x[0].test(et)) || [0, 0])[1];
+  if (cx.sy != null && s.age >= 7) rows.push(pair('Учёба', ey, cx.sy, 'лет', 'у взрослых жителей страны'));
+  if (c0 && c0.tfr != null && s.age >= 18) { const kids = (s.children || []).length; rows.push(pair('Дети', kids, c0.tfr, kids === 1 ? 'ребёнок' : 'детей', 'в среднем на женщину в стране')); }
+  const peakInc = H.length ? H.reduce((a, h) => (h.inc > a.inc ? h : a), H[0]) : null, peakNw = H.length ? H.reduce((a, h) => (h.nw > a.nw ? h : a), H[0]) : null;
+  const pos = (name, topP, note) => `<li><div class="cmh"><b>${name}</b><span class="muted small">${note}</span></div><div class="cmb"><span>Вы опередили ${100 - topP}% жителей</span><i style="width:${100 - topP}%"></i></div></li>`;
+  if (s.age >= 18 && peakInc && peakInc.inc > 0) { const t = rankCountry(s, Math.max(1, peakInc.inc)); rows.push(pos('Лучший год по доходу', t, `возраст ${peakInc.a}, верхние ${t}% в стране`)); }
+  if (s.age >= 18 && peakNw && peakNw.nw > 0) { const t = rankCountry(s, Math.max(1, peakNw.nw / 12)); if (t <= 60) rows.push(pos('Богатство на пике', t, `возраст ${peakNw.a}, верхние ${t}% в стране`)); }
+  return rows.length ? `<ul class="cmplist">${rows.join('')}</ul>` : '';
+}
+/* заглушка ленты карточек внизу стартового экрана */
+(() => {
+  const lh = landingHTML;
+  landingHTML = function () {
+    return lh() + `<section class="feedstub"><h2 class="h3">Лента жизней</h2><p>Здесь появятся карточки жизней, которыми поделились игроки. Раздел скоро откроется.</p></section>`;
+  };
+})();
 
 
 </script>
