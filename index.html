@@ -913,6 +913,18 @@ section.dr2 { background: var(--surface); border: 1px solid var(--line); border-
 .feedstub h2 { margin: 0 0 6px; }
 .feedstub p { margin: 0; color: var(--muted); }
 
+/* лента жизней */
+.feedbox { border-top: 1px solid var(--line); padding-top: 18px; margin: 8px 0 24px; }
+.feedbox h2 { margin: 0 0 4px; }
+.flist { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 14px 0; }
+.fcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; min-width: 0; }
+.fcard h3 { margin: 0 0 4px; font-size: 17px; overflow-wrap: anywhere; }
+.fmeta { margin: 0 0 6px; color: var(--muted); font-size: 13px; }
+.fcause { margin: 0 0 8px; font-size: 14px; }
+.fmom { display: grid; gap: 4px; font-size: 13px; margin: 0 0 8px; padding: 0; list-style: none; }
+.fmom b { color: var(--accent); font-weight: 600; margin-right: 4px; }
+.frow { display: flex; justify-content: flex-end; }
+
 </style>
 <div class="app">
   <div class="topbars" id="topbars">
@@ -11774,13 +11786,140 @@ function endCompare() {
   if (s.age >= 18 && peakNw && peakNw.nw > 0) { const t = rankCountry(s, Math.max(1, peakNw.nw / 12)); if (t <= 60) rows.push(pos('Богатство на пике', t, `возраст ${peakNw.a}, верхние ${t}% в стране`)); }
   return rows.length ? `<ul class="cmplist">${rows.join('')}</ul>` : '';
 }
-/* заглушка ленты карточек внизу стартового экрана */
+
+/* ===== Лента жизней: публикация карточки и просмотр ленты на стартовом экране =====
+   Сервер: Supabase (бесплатный план), обычный REST. Ключ anon публичный по замыслу: права ограничены правилами таблицы (RLS):
+   читать видимые карточки и добавлять новые. Если url/key пустые, лента работает в демо-режиме: карточки хранятся только на этом устройстве.
+   Публикуется минимум: имя героя, страна, возраст, причина, тип семьи, число детей и три главных момента. Письмо и личные данные не уходят. */
+const FEED_CFG = { url: '', key: '', paid: false };
+const FLANG = /*LANG*/'ru';
+const FEED_SEED = [{"v":1,"name":"Хён-у","sex":"m","iso":"prk","country":"КНДР (Корейская Народно-Демократическая Республика)","era":2024,"age":83,"dead":true,"cause":"онкологическая болезнь","fam":"мама растит вас одна","kids":1,"top":[{"age":23,"title":"Предложение","pick":"Начать своё дело"},{"age":36,"title":"Азарт","pick":"Вложить всё, что есть"},{"age":19,"title":"Призыв","pick":"Уехать из страны"}],"sim":1},{"v":1,"name":"Идрис","sex":"m","iso":"gha","country":"Гана","era":2024,"age":79,"dead":true,"cause":"онкологическая болезнь","fam":"оба родителя рядом","kids":0,"top":[{"age":23,"title":"Предложение","pick":"Быстрые деньги по знакомству"},{"age":18,"title":"Развилка","pick":"Уехать на заработки в другой город или страну"},{"age":52,"title":"Остановиться","pick":"Взять паузу"}],"sim":1},{"v":1,"name":"Аде","sex":"f","iso":"nga","country":"Нигерия","era":2024,"age":68,"dead":true,"cause":"авария на дороге","fam":"оба родителя рядом","kids":3,"top":[{"age":24,"title":"Предложение","pick":"Начать своё дело"},{"age":26,"title":"Вы ждёте ребёнка","pick":"С повитухой дома, как у вас в семье принято"},{"age":41,"title":"Кризис","pick":"Уехать туда, где есть работа"}],"sim":1},{"v":1,"name":"Нонг","sex":"f","iso":"idn","country":"Индонезия","era":2024,"age":80,"dead":true,"cause":"старость","fam":"оба родителя рядом","kids":1,"top":[{"age":40,"title":"Так больше не получается","pick":"Расстаться"},{"age":18,"title":"Слишком рано","pick":"Уйти к родственникам и учиться дальше"},{"age":48,"title":"Предложение, которое всё изменит","pick":"Согласиться"}],"sim":1},{"v":1,"name":"Аде","sex":"f","iso":"eth","country":"Эфиопия","era":2024,"age":82,"dead":true,"cause":"онкологическая болезнь","fam":"оба родителя рядом","kids":0,"top":[{"age":36,"title":"Азарт","pick":"Вложить всё, что есть"},{"age":52,"title":"Остановиться","pick":"Взять паузу"},{"age":40,"title":"Кризис","pick":"Уехать туда, где есть работа"}],"sim":1},{"v":1,"name":"Нур","sex":"f","iso":"irn","country":"Иран","era":2024,"age":84,"dead":true,"cause":"болезнь сердца","fam":"мама растит вас одна","kids":0,"top":[{"age":36,"title":"Азарт","pick":"Вложить всё, что есть"},{"age":38,"title":"Кризис","pick":"Уехать туда, где есть работа"},{"age":21,"title":"Диплом мастера","pick":"Уехать работать за границу"}],"sim":1},{"v":1,"name":"Квеку","sex":"m","iso":"som","country":"Сомали","era":2024,"age":81,"dead":true,"cause":"болезнь сердца","fam":"оба родителя рядом","kids":0,"top":[{"age":22,"title":"Последняя попытка","pick":"Уехать на заработки в другой город или страну"},{"age":55,"title":"Наследство","pick":"Отстаивать свою долю в суде"},{"age":52,"title":"Остановиться","pick":"Ещё один рывок"}],"sim":1},{"v":1,"name":"Нгози","sex":"f","iso":"cmr","country":"Камерун","era":2024,"age":68,"dead":true,"cause":"авария на дороге","fam":"оба родителя рядом","kids":1,"top":[{"age":23,"title":"Предложение","pick":"Быстрые деньги по знакомству"},{"age":52,"title":"Остановиться","pick":"Ещё один рывок"},{"age":18,"title":"Слишком рано","pick":"Уйти к родственникам и учиться дальше"}],"sim":1},{"v":1,"name":"Оуэн","sex":"m","iso":"gbr","country":"Великобритания","era":2024,"age":88,"dead":true,"cause":"диабет и его осложнения","fam":"оба родителя рядом","kids":0,"top":[{"age":52,"title":"Остановиться","pick":"Взять паузу"},{"age":55,"title":"Наследство","pick":"Отстаивать свою долю в суде"},{"age":46,"title":"Переезд","pick":"Переехать за работой"}],"sim":1},{"v":1,"name":"Идрис","sex":"m","iso":"sdn","country":"Судан","era":2024,"age":75,"dead":true,"cause":"диабет и его осложнения","fam":"оба родителя рядом","kids":1,"top":[{"age":22,"title":"Вечеринка до утра","pick":"Остаться и попробовать то, что предлагают"},{"age":19,"title":"Долг, о котором вы помните","pick":"Попросить отсрочку"},{"age":16,"title":"Новая компания","pick":"Компания у гаражей"}],"sim":1},{"v":1,"name":"Аман","sex":"m","iso":"pak","country":"Пакистан","era":2024,"age":45,"dead":true,"cause":"несчастный случай","fam":"оба родителя рядом","kids":1,"top":[{"age":23,"title":"Предложение","pick":"Быстрые деньги по знакомству"},{"age":22,"title":"Чего от вас ждут","pick":"Прямо сказать, что решите сами"},{"age":38,"title":"Кризис","pick":"Взять любую работу"}],"sim":1},{"v":1,"name":"Амина","sex":"f","iso":"zaf","country":"ЮАР","era":2024,"age":88,"dead":true,"cause":"авария на дороге","fam":"оба родителя рядом","kids":0,"top":[{"age":36,"title":"Азарт","pick":"Вложить всё, что есть"},{"age":18,"title":"Диплом мастера","pick":"Уехать работать за границу"},{"age":50,"title":"Родителям нужна помощь","pick":"Забрать к себе"}],"sim":1},{"v":1,"name":"Ли","sex":"f","iso":"chn","country":"КНР (Китайская Народная Республика)","era":2024,"age":79,"dead":true,"cause":"онкологическая болезнь","fam":"бабушка, дедушка и родители под одной кр","kids":0,"top":[{"age":52,"title":"Остановиться","pick":"Взять паузу"},{"age":48,"title":"Предложение, которое всё изменит","pick":"Согласиться"},{"age":31,"title":"Разговор о браке","pick":"Расстаться"}],"sim":1},{"v":1,"name":"Лейла","sex":"f","iso":"egy","country":"Египет","era":2024,"age":80,"dead":true,"cause":"старость","fam":"оба родителя рядом","kids":0,"top":[{"age":18,"title":"Что дальше","pick":"Уехать искать другую жизнь"},{"age":23,"title":"Предложение","pick":"Начать своё дело"},{"age":36,"title":"Азарт","pick":"Вложить всё, что есть"}],"sim":1},{"v":1,"name":"Вивек","sex":"m","iso":"afg","country":"Афганистан","era":2024,"age":84,"dead":true,"cause":"старость","fam":"оба родителя рядом","kids":2,"top":[{"age":18,"title":"Что дальше","pick":"Уехать искать другую жизнь"},{"age":55,"title":"Наследство","pick":"Отстаивать свою долю в суде"},{"age":56,"title":"Так больше не получается","pick":"Развестись"}],"sim":1},{"v":1,"name":"Диего","sex":"m","iso":"cri","country":"Коста-Рика","era":2024,"age":88,"dead":true,"cause":"старость","fam":"оба родителя рядом","kids":0,"top":[{"age":48,"title":"Предложение, которое всё изменит","pick":"Согласиться"},{"age":52,"title":"Остановиться","pick":"Передать дело или должность младшим"},{"age":11,"title":"Затяжная болезнь","pick":"Отлежаться дома по бабушкиным рецептам"}],"sim":1},{"v":1,"name":"Эмека","sex":"m","iso":"bdi","country":"Бурунди","era":2024,"age":79,"dead":true,"cause":"болезнь сердца","fam":"бабушка, дедушка и родители под одной кр","kids":2,"top":[{"age":48,"title":"Предложение, которое всё изменит","pick":"Согласиться"},{"age":21,"title":"Вечеринка до утра","pick":"Остаться и попробовать то, что предлагают"},{"age":52,"title":"Остановиться","pick":"Ещё один рывок"}],"sim":1},{"v":1,"name":"Хавьер","sex":"m","iso":"gtm","country":"Гватемала","era":2024,"age":79,"dead":true,"cause":"авария на дороге","fam":"оба родителя рядом","kids":0,"top":[{"age":39,"title":"Так больше не получается","pick":"Расстаться"},{"age":36,"title":"Азарт","pick":"Вложить всё, что есть"},{"age":31,"title":"Разговор о браке","pick":"Пожениться"}],"sim":1},{"v":1,"name":"Рохит","sex":"m","iso":"bgd","country":"Бангладеш","era":2024,"age":87,"dead":true,"cause":"онкологическая болезнь","fam":"оба родителя рядом","kids":1,"top":[{"age":24,"title":"Предложение","pick":"Быстрые деньги по знакомству"},{"age":52,"title":"Остановиться","pick":"Ещё один рывок"},{"age":50,"title":"Родителям нужна помощь","pick":"Забрать к себе"}],"sim":1},{"v":1,"name":"Тарек","sex":"m","iso":"irq","country":"Ирак","era":2024,"age":97,"dead":true,"cause":"хроническая болезнь лёгких","fam":"оба родителя рядом","kids":0,"top":[{"age":39,"title":"Азарт","pick":"Вложить всё, что есть"},{"age":24,"title":"Предложение","pick":"Начать своё дело"},{"age":55,"title":"Наследство","pick":"Отстаивать свою долю в суде"}],"sim":1},{"v":1,"name":"Секу","sex":"m","iso":"ken","country":"Кения","era":2024,"age":49,"dead":true,"cause":"насилие","fam":"оба родителя рядом","kids":0,"top":[{"age":36,"title":"Азарт","pick":"Вложить всё, что есть"},{"age":20,"title":"Вечеринка до утра","pick":"Остаться и попробовать то, что предлагают"},{"age":31,"title":"Разговор о браке","pick":"Расстаться"}],"sim":1},{"v":1,"name":"Жулия","sex":"f","iso":"bra","country":"Бразилия","era":2024,"age":99,"dead":true,"cause":"болезнь сердца","fam":"оба родителя рядом","kids":0,"top":[{"age":34,"title":"Разговор о браке","pick":"Пожениться"},{"age":18,"title":"Слишком рано","pick":"Уйти к родственникам и учиться дальше"},{"age":56,"title":"Так больше не получается","pick":"Развестись"}],"sim":1},{"v":1,"name":"Халид","sex":"m","iso":"dza","country":"Алжир","era":2024,"age":81,"dead":true,"cause":"старость","fam":"оба родителя рядом","kids":0,"top":[{"age":23,"title":"Предложение","pick":"Начать своё дело"},{"age":52,"title":"Остановиться","pick":"Взять паузу"},{"age":28,"title":"Купить собственный дом?","pick":"Купить с ипотекой"}],"sim":1},{"v":1,"name":"Рохит","sex":"m","iso":"ind","country":"Индия","era":2024,"age":78,"dead":true,"cause":"болезнь сердца","fam":"оба родителя рядом","kids":2,"top":[{"age":24,"title":"Предложение","pick":"Начать своё дело"},{"age":18,"title":"Что дальше","pick":"Уехать искать другую жизнь"},{"age":32,"title":"Что вы будете делать со сбережениями?","pick":"Вложить в сбалансированный фонд акций и облигаций"}],"sim":1}];   /* образцы: жизни, сыгранные самой игрой; показываются, пока нет сервера ленты */
+const FT = FLANG === 'en' ? {
+  title: 'Life feed', sub: 'Life cards shared by players.', empty: 'Nothing here yet. Be the first: live a life and publish its card.',
+  pub: 'Publish to the feed', pubDone: 'In the feed ✓', ask: 'The card will be visible to everyone: hero name, country, age, cause, and three key moments. Your letter is not published. Free for now. Press again to publish.',
+  ok: 'Published to the feed ✓', fail: 'Could not publish. Try again later.', demo: 'Demo mode: the card is visible only on this device until the feed server is connected.',
+  more: 'Show more', sim: 'simulated life', report: 'Report', reported: 'Thanks, hidden', loading: 'Loading…', err: 'The feed is unavailable right now.', mine: 'yours',
+  lived: (f, n) => 'Lived ' + n + (n === 1 ? ' year' : ' years'), born: y => 'born ' + y, kids: n => n + (n === 1 ? ' child' : ' children'), cause: 'Cause'
+} : {
+  title: 'Лента жизней', sub: 'Карточки жизней, которыми поделились игроки.', empty: 'Пока пусто. Станьте первым: проживите жизнь и опубликуйте карточку.',
+  pub: 'Опубликовать в ленте', pubDone: 'В ленте ✓', ask: 'Карточка станет видна всем: имя героя, страна, возраст, причина и три главных момента. Письмо не публикуется. Пока бесплатно. Нажмите ещё раз, чтобы опубликовать.',
+  ok: 'Опубликовано в ленте ✓', fail: 'Не удалось опубликовать. Попробуйте позже.', demo: 'Демо-режим: карточку видно только на этом устройстве, пока не подключён сервер ленты.',
+  more: 'Показать ещё', sim: 'смоделированная жизнь', report: 'Пожаловаться', reported: 'Спасибо, скрыто', loading: 'Загрузка…', err: 'Лента сейчас недоступна.', mine: 'ваша',
+  lived: (f, n) => (f ? 'Прожила ' : 'Прожил ') + n + ' ' + word(n, 'год', 'года', 'лет'), born: y => 'родился ' + y, kids: n => n + ' ' + word(n, 'ребёнок', 'ребёнка', 'детей'), cause: 'Причина'
+};
+const feedOn = () => !!(FEED_CFG.url && FEED_CFG.key);
+const feedLocal = () => { const v = store.get('feedLocal', []); return Array.isArray(v) ? v : []; };
+const feedPubIds = () => { const v = store.get('feedPub', {}); return v && typeof v === 'object' ? v : {}; };
+const feedHidden = () => { const v = store.get('feedHide', {}); return v && typeof v === 'object' ? v : {}; };
+
+/* публичная карточка из итога жизни: только короткие поля */
+function feedCard(rec) {
+  const cut = (x, n) => String(x == null ? '' : x).slice(0, n);
+  return {
+    v: 1, name: cut(rec.name, 60), sex: rec.sex === 'f' ? 'f' : 'm', iso: cut(rec.iso, 8), country: cut(rec.country, 60),
+    era: typeof rec.era === 'number' ? rec.era : 0, age: Math.max(0, Math.min(125, Math.round(+rec.age || 0))), dead: !!rec.dead, cause: cut(rec.cause, 80),
+    fam: cut(rec.fam, 40), kids: Math.max(0, Math.min(30, +rec.kids || 0)),
+    top: (rec.top || []).slice(0, 3).map(t => ({ age: Math.max(0, Math.min(125, Math.round(+t.age || 0))), title: cut(t.title, 70), pick: cut(t.pick, 70) }))
+  };
+}
+/* карточка с сервера могла быть подделана: приводим к безопасному виду и всё равно экранируем при выводе */
+function feedClean(c) {
+  if (!c || typeof c !== 'object') return null;
+  const cut = (x, n) => String(x == null ? '' : x).slice(0, n);
+  const top = Array.isArray(c.top) ? c.top.slice(0, 3).map(t => ({ age: Math.max(0, Math.min(125, Math.round(+(t && t.age) || 0))), title: cut(t && t.title, 70), pick: cut(t && t.pick, 70) })) : [];
+  return { name: cut(c.name, 60), sex: c.sex === 'f' ? 'f' : 'm', country: cut(c.country, 60), era: +c.era > 0 ? Math.round(+c.era) : 0, age: Math.max(0, Math.min(125, Math.round(+c.age || 0))), cause: cut(c.cause, 80), kids: Math.max(0, Math.min(30, Math.round(+c.kids || 0))), top, dead: !!c.dead };
+}
+function feedHTML(it) {
+  const c = it.card, f = c.sex === 'f';
+  const moms = c.top.map(t => `<li><b>${t.age}</b> ${esc(t.title)}${t.pick ? ': ' + esc(t.pick) : ''}</li>`).join('');
+  const meta = [FT.lived(f, c.age), c.country.replace(/\s*\(.*\)/, ''), c.era ? FT.born(c.era) : '', c.kids ? FT.kids(c.kids) : ''].filter(Boolean).map(esc).join(' · ');
+  const rep = it.sim ? `<span class="muted small">${esc(FT.sim)}</span>` : it.local ? `<span class="muted small">${esc(FT.mine)}</span>` : `<button class="link small" data-rep="${esc(String(it.id))}">${esc(FT.report)}</button>`;
+  return `<article class="fcard"><h3>${esc(c.name)}</h3><p class="fmeta">${meta}</p>${c.cause ? `<p class="fcause">${esc(FT.cause)}: ${esc(c.cause)}</p>` : ''}${moms ? `<ul class="plain fmom">${moms}</ul>` : ''}<div class="frow">${rep}</div></article>`;
+}
+
+/* ---- сервер ---- */
+const feedHdr = () => ({ apikey: FEED_CFG.key, Authorization: 'Bearer ' + FEED_CFG.key, 'Content-Type': 'application/json' });
+async function feedFetch(before) {
+  if (!feedOn()) return feedLocal().filter(x => x.lang === FLANG).map(x => ({ id: 'l' + x.rid, card: x.card, local: true })).reverse().concat(FEED_SEED.map((c, i) => ({ id: 's' + i, card: feedClean(c), sim: true })).filter(x => x.card));
+  const q = `${FEED_CFG.url}/rest/v1/feed?select=id,card&lang=eq.${FLANG}&order=id.desc&limit=12` + (before ? `&id=lt.${+before}` : '');
+  const r = await fetch(q, { headers: feedHdr() });
+  if (!r.ok) throw new Error('feed ' + r.status);
+  const a = await r.json();
+  return (Array.isArray(a) ? a : []).map(x => ({ id: x.id, card: feedClean(x.card) })).filter(x => x.card && x.card.name);
+}
+async function feedPublish(rec) {
+  const rid = String(rec.t) + '-' + Math.random().toString(36).slice(2, 8), card = feedCard(rec);
+  if (!feedOn()) { const L = feedLocal(); L.push({ rid, lang: FLANG, card }); store.set('feedLocal', L.slice(-20)); return { demo: true, rid }; }
+  const r = await fetch(`${FEED_CFG.url}/rest/v1/feed`, { method: 'POST', headers: Object.assign({ Prefer: 'return=minimal' }, feedHdr()), body: JSON.stringify({ rid, lang: FLANG, card }) });
+  if (!r.ok) throw new Error('pub ' + r.status);
+  return { rid };
+}
+async function feedReport(id) {
+  const h = feedHidden(); h[id] = 1; store.set('feedHide', h);
+  if (!feedOn()) return;
+  try { await fetch(`${FEED_CFG.url}/rest/v1/feed_reports`, { method: 'POST', headers: Object.assign({ Prefer: 'return=minimal' }, feedHdr()), body: JSON.stringify({ card_id: +id }) }); } catch (e) { /* жалоба локально уже учтена */ }
+}
+
+/* ---- лента на стартовом экране ---- */
+let FEED_ST = { items: [], last: null, done: false, busy: false };
+function feedPaint() {
+  const box = document.getElementById('feedList'); if (!box) return;
+  const hid = feedHidden(), items = FEED_ST.items.filter(x => !hid[x.id]);
+  box.innerHTML = items.length ? items.map(feedHTML).join('') : `<p class="muted">${esc(FT.empty)}</p>`;
+  const more = document.getElementById('feedMore'); if (more) more.hidden = FEED_ST.done || !feedOn();
+  box.querySelectorAll('[data-rep]').forEach(b => { b.onclick = () => { feedReport(b.getAttribute('data-rep')); b.textContent = FT.reported; b.disabled = true; setTimeout(feedPaint, 700); }; });
+}
+async function feedLoad(more) {
+  if (FEED_ST.busy) return; FEED_ST.busy = true;
+  const box = document.getElementById('feedList'), btn = document.getElementById('feedMore');
+  if (box && !more) box.innerHTML = `<p class="muted">${esc(FT.loading)}</p>`;
+  try {
+    const part = await feedFetch(more ? FEED_ST.last : null);
+    if (!more) FEED_ST.items = [];
+    FEED_ST.items = FEED_ST.items.concat(part);
+    const ids = FEED_ST.items.map(x => x.id).filter(x => typeof x === 'number');
+    FEED_ST.last = ids.length ? Math.min.apply(null, ids) : null;
+    FEED_ST.done = !feedOn() || part.length < 12;
+    feedPaint();
+  } catch (e) {
+    if (box) box.innerHTML = `<p class="muted">${esc(FT.err)}</p>`;
+  }
+  FEED_ST.busy = false; if (btn) btn.disabled = false;
+}
 (() => {
   const lh = landingHTML;
   landingHTML = function () {
-    return lh() + `<section class="feedstub"><h2 class="h3">Лента жизней</h2><p>Здесь появятся карточки жизней, которыми поделились игроки. Раздел скоро откроется.</p></section>`;
+    setTimeout(() => { if (document.getElementById('feedList')) { FEED_ST = { items: [], last: null, done: false, busy: false }; feedLoad(false); const m = document.getElementById('feedMore'); if (m) m.onclick = () => feedLoad(true); } }, 0);
+    return lh() + `<section class="feedbox" id="feed"><h2 class="h3">${esc(FT.title)}</h2><p class="muted">${esc(FT.sub)}</p><div id="feedList" class="flist"></div><div class="btnrow"><button class="ghost" id="feedMore" hidden>${esc(FT.more)}</button></div></section>`;
   };
 })();
+
+/* ---- кнопка на экране конца жизни ---- */
+(() => {
+  const re = renderEnd;
+  renderEnd = function (st) {
+    re(st);
+    const b = document.getElementById('drFeed'); if (!b) return;
+    const msg = t => { const e = document.getElementById('stubMsg'); if (e) e.textContent = t; };
+    const rec0 = () => { S.rec = S.rec || lifeSummary(S); return S.rec; };
+    const done = () => !!feedPubIds()[rec0().t];
+    b.textContent = done() ? FT.pubDone : FT.pub; b.disabled = done();
+    let asked = false;
+    b.onclick = async () => {
+      if (done()) return;
+      if (!asked) { asked = true; msg(FT.ask); return; }
+      b.disabled = true;
+      try {
+        const r = await feedPublish(rec0());
+        const p = feedPubIds(); p[rec0().t] = 1; store.set('feedPub', p);
+        b.textContent = FT.pubDone; msg(r.demo ? FT.demo : FT.ok);
+      } catch (e) { b.disabled = false; asked = false; msg(FT.fail); }
+    };
+  };
+})();
+
+/* первый показ стартового экрана случился раньше, чем лента подключилась */
+if (typeof S !== "undefined" && !S && view.name === "start") render();
 
 
 </script>
