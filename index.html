@@ -1,6 +1,33 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>One Life</title>
+<meta name="description" content="Проживите одну жизнь: случайная страна, эпоха и семья рождения, решения и последствия на реальной статистике ООН и Всемирного банка. Бесплатно, без регистрации.">
+<link rel="canonical" href="https://bloodforg.github.io/online/">
+<link rel="alternate" hreflang="ru" href="https://bloodforg.github.io/online/">
+<link rel="alternate" hreflang="en" href="https://bloodforg.github.io/online/en.html">
+<link rel="alternate" hreflang="x-default" href="https://bloodforg.github.io/online/en.html">
+<meta property="og:type" content="website"><meta property="og:title" content="One Life — симулятор жизни в браузере"><meta property="og:description" content="Проживите одну жизнь: случайная страна, эпоха и семья рождения, решения и последствия на реальной статистике ООН и Всемирного банка. Бесплатно, без регистрации."><meta property="og:locale" content="ru_RU">
+<script>
+(function(){
+  var KEY='onelife.lang', here='ru', other='en', ls=null;
+  try{ls=localStorage.getItem(KEY);}catch(e){}
+  try{var m=/[?&]lang=(ru|en)\b/.exec(location.search); if(m){ls=m[1]; try{localStorage.setItem(KEY,ls);}catch(e){}}}catch(e){}
+  var bot=/bot|crawl|spider|slurp|yandex|google|bing|baidu|facebookexternalhit|preview/i.test(navigator.userAgent||'');
+  if(!bot && location.protocol!=='file:'){
+    var want=ls;
+    if(!want){
+      var l=String(navigator.language||(navigator.languages&&navigator.languages[0])||'ru').toLowerCase().slice(0,2);
+      want=(['ru','uk','be','kk','ky','uz','hy','az','tg','ka','mo'].indexOf(l)<0?'en':'ru');
+    }
+    if(want && want!==here) location.replace('en.html');
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('#mLang'); if(!b) return;
+    try{localStorage.setItem(KEY,b.getAttribute('data-to'));}catch(_){}
+    location.href='en.html';
+  });
+})();
+</script>
+<title>One Life — симулятор жизни в браузере</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -897,6 +924,7 @@ section.dr2 { background: var(--surface); border: 1px solid var(--line); border-
       <button id="mLives">Мемориал</button>
       <button id="mCare" class="care">Если вам тяжело</button>
       <button id="mMore">Ещё</button>
+      <button id="mLang" type="button" data-to="en" title="English version" aria-label="English version">EN</button>
       <button id="mTheme" class="icon" type="button" aria-label="Сменить тему: светлая или тёмная" title="Тема: светлая или тёмная"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg></button>
     </nav>
   </header>
