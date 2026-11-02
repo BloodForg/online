@@ -6,6 +6,20 @@
 <link rel="alternate" hreflang="en" href="https://bloodforg.github.io/online/en.html">
 <link rel="alternate" hreflang="x-default" href="https://bloodforg.github.io/online/en.html">
 <meta property="og:type" content="website"><meta property="og:title" content="One Life — симулятор жизни в браузере"><meta property="og:description" content="Проживите одну жизнь: случайная страна, эпоха и семья рождения, решения и последствия на реальной статистике ООН и Всемирного банка. Бесплатно, без регистрации."><meta property="og:locale" content="ru_RU">
+<style>html.embed{height:100%;overflow:hidden}html.embed body{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}html.embed body.has-modal{overflow:hidden}</style>
+<script>
+/* В iframe (itch.io и др.) у встроенного окна часто scrolling="no": окно не прокручивается колесом. Тогда прокручиваем body и подменяем window.scroll*. */
+(function(){
+  var inF=false; try{inF=window.top!==window.self;}catch(e){inF=true;}
+  if(!inF) return;
+  document.documentElement.className+=' embed';
+  var B=function(){return document.body;};
+  window.scrollTo=window.scroll=function(a,b){var o=(a&&typeof a==='object')?a:{left:a,top:b}; if(B()) B().scrollTo({top:+o.top||0,left:+o.left||0,behavior:o.behavior||'auto'});};
+  window.scrollBy=function(a,b){var o=(a&&typeof a==='object')?a:{left:a,top:b}; if(B()) B().scrollBy({top:+o.top||0,left:+o.left||0,behavior:o.behavior||'auto'});};
+  ['scrollY','pageYOffset'].forEach(function(k){try{Object.defineProperty(window,k,{get:function(){return B()?B().scrollTop:0;},configurable:true});}catch(e){}});
+  document.addEventListener('DOMContentLoaded',function(){B().addEventListener('scroll',function(){window.dispatchEvent(new Event('scroll'));},{passive:true});});
+})();
+</script>
 <script>
 (function(){
   var KEY='onelife.lang', here='ru', other='en', ls=null;

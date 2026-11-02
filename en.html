@@ -6,6 +6,20 @@
 <link rel="alternate" hreflang="en" href="https://bloodforg.github.io/online/en.html">
 <link rel="alternate" hreflang="x-default" href="https://bloodforg.github.io/online/en.html">
 <meta property="og:type" content="website"><meta property="og:title" content="One Life — a browser life simulator"><meta property="og:description" content="Live one life: a random country, era and family, with choices and consequences based on real UN and World Bank statistics. Free, no sign-up."><meta property="og:locale" content="en_US">
+<style>html.embed{height:100%;overflow:hidden}html.embed body{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}html.embed body.has-modal{overflow:hidden}</style>
+<script>
+/* В iframe (itch.io и др.) у встроенного окна часто scrolling="no": окно не прокручивается колесом. Тогда прокручиваем body и подменяем window.scroll*. */
+(function(){
+  var inF=false; try{inF=window.top!==window.self;}catch(e){inF=true;}
+  if(!inF) return;
+  document.documentElement.className+=' embed';
+  var B=function(){return document.body;};
+  window.scrollTo=window.scroll=function(a,b){var o=(a&&typeof a==='object')?a:{left:a,top:b}; if(B()) B().scrollTo({top:+o.top||0,left:+o.left||0,behavior:o.behavior||'auto'});};
+  window.scrollBy=function(a,b){var o=(a&&typeof a==='object')?a:{left:a,top:b}; if(B()) B().scrollBy({top:+o.top||0,left:+o.left||0,behavior:o.behavior||'auto'});};
+  ['scrollY','pageYOffset'].forEach(function(k){try{Object.defineProperty(window,k,{get:function(){return B()?B().scrollTop:0;},configurable:true});}catch(e){}});
+  document.addEventListener('DOMContentLoaded',function(){B().addEventListener('scroll',function(){window.dispatchEvent(new Event('scroll'));},{passive:true});});
+})();
+</script>
 <script>
 (function(){
   var KEY='onelife.lang', here='en', other='ru', ls=null;
@@ -18,12 +32,12 @@
       var l=String(navigator.language||(navigator.languages&&navigator.languages[0])||'ru').toLowerCase().slice(0,2);
       want=null;
     }
-    if(want && want!==here) location.replace('./');
+    if(want && want!==here) location.replace('index.html');
   }
   document.addEventListener('click',function(e){
     var b=e.target.closest&&e.target.closest('#mLang'); if(!b) return;
     try{localStorage.setItem(KEY,b.getAttribute('data-to'));}catch(_){}
-    location.href='./';
+    location.href='index.html';
   });
 })();
 </script>
